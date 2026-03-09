@@ -1,57 +1,33 @@
-name: LineageOS 19.1 Build for fleur
+name: PixelOS Android 12 Build fleur SSH
 
 on:
-  workflow_dispatch: # Buildni qo'lda boshlash tugmasi
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # Eng barqaror versiya
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Atrof-muhitni sozlash (Packages)
+      - name: Atrof-muhitni va Repo skriptini sozlash
         run: |
           sudo apt update
           sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3
-
-      - name: Repo skriptini o'rnatish
-        run: |
           mkdir -p ~/bin
           curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
           chmod a+x ~/bin/repo
           sudo ln -sf ~/bin/repo /usr/bin/repo
-
-      - name: Git konfiguratsiyasi
-        run: |
           git config --global user.name "Abdurahmon Karimov"
           git config --global user.email "abdurahmon@example.com"
 
-      - name: LineageOS Source Sync (Android 12)
+      - name: PixelOS Source yuklash (Android 12.1)
         run: |
-          mkdir lineage && cd lineage
-          repo init -u https://github.com/LineageOS/android.git -b lineage-19.1 --depth=1
-          # Sync jarayoni (GitHub serverida bu juda tez o'tadi)
+          mkdir pixelos && cd pixelos
+          # PixelOS Android 12.1 (snow) uchun manifest linki:
+          repo init -u https://github.com/PixelOS-AOSP/manifest.git -b twelve --depth=1
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
-      - name: Device Tree-larni yuklash (fleur)
-        run: |
-          cd lineage
-          # Note 11S (fleur) uchun tree-larni shu yerga qo'shamiz
-          git clone https://github.com/ProjectElixir-Devices/android_device_xiaomi_fleur.git -b 12 device/xiaomi/fleur
-          # MUHIM: Bu yerga Vendor va Kernel tree linklarini ham qo'shishing kerak
-          # git clone <vendor_link> -b <branch> vendor/xiaomi/fleur
-          # git clone <kernel_link> -b <branch> kernel/xiaomi/fleur
-
-      - name: Buildni boshlash
-        run: |
-          cd lineage
-          source build/envsetup.sh
-          lunch lineage_fleur-userdebug
-          mka bacon -j$(nproc --all)
-
-      - name: Tayyor ROM-ni yuklab olish (Upload)
-        uses: actions/upload-artifact@v3
-        with:
-          name: LineageOS-fleur-ROM
-          path: lineage/out/target/product/fleur/*.zip
+      - name: Terminalga ulanish (SSH)
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 360
