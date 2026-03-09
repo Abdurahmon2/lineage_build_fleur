@@ -1,4 +1,4 @@
-name: PixelOS Android 12 Build fleur SSH
+name: EvolutionX Android 12 Build fleur SSH
 
 on:
   workflow_dispatch:
@@ -21,13 +21,13 @@ jobs:
           git config --global user.name "Abdurahmon Karimov"
           git config --global user.email "abdurahmon@example.com"
 
-      - name: PixelOS Source yuklash (Android 12.1)
+      - name: EvolutionX Source yuklash (Android 12.1 - Snow)
         run: |
-          mkdir pixelos && cd pixelos
-          # PixelOS Android 12.1 (snow) uchun manifest linki:
-          repo init -u https://github.com/PixelOS-AOSP/manifest.git -b twelve --depth=1
+          mkdir evox && cd evox
+          repo init -u https://github.com/Evolution-X/manifest.git -b snow --depth=1
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Terminalga ulanish (SSH)
         uses: mxschmitt/action-tmate@v3
+        if: always()
         timeout-minutes: 360
