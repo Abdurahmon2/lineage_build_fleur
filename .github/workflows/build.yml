@@ -1,11 +1,11 @@
 name: EvolutionX Android 12 Build fleur SSH
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Buildni qo'lda boshlash tugmasi
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04 # Android 12 uchun eng barqaror muhit
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,10 +24,12 @@ jobs:
       - name: EvolutionX Source yuklash (Android 12.1 - Snow)
         run: |
           mkdir evox && cd evox
+          # Evolution X Android 12.1 uchun rasmiy manifest
           repo init -u https://github.com/Evolution-X/manifest.git -b snow --depth=1
+          # Sync jarayoni (GitHub 2Gbps internetida juda tez o'tadi)
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
-      - name: Terminalga ulanish (SSH)
+      - name: Terminalga ulanish (SSH tmate)
         uses: mxschmitt/action-tmate@v3
-        if: always()
+        if: always() # Sync xato bersa ham terminal o'chmasligi uchun
         timeout-minutes: 360
