@@ -1,35 +1,42 @@
-name: EvolutionX Android 12 Build fleur SSH
+name: PixelOS Build
 
 on:
-  workflow_dispatch: # Buildni qo'lda boshlash tugmasi
+workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04 # Android 12 uchun eng barqaror muhit
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+build:
+runs-on: ubuntu-latest
 
-      - name: Atrof-muhitni va Repo skriptini sozlash
-        run: |
-          sudo apt update
-          sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3
-          mkdir -p ~/bin
-          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
-          chmod a+x ~/bin/repo
-          sudo ln -sf ~/bin/repo /usr/bin/repo
-          git config --global user.name "Abdurahmon Karimov"
-          git config --global user.email "abdurahmon@example.com"
+```
+steps:
+- name: Checkout
+  uses: actions/checkout@v4
 
-      - name: EvolutionX Source yuklash (Android 12.1 - Snow)
-        run: |
-          mkdir evox && cd evox
-          # Evolution X Android 12.1 uchun rasmiy manifest
-          repo init -u https://github.com/Evolution-X/manifest.git -b snow --depth=1
-          # Sync jarayoni (GitHub 2Gbps internetida juda tez o'tadi)
-          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+- name: Install dependencies
+  run: |
+    sudo apt update
+    sudo apt install git-lfs repo bc bison build-essential curl flex g++-multilib \
+    gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev \
+    lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev \
+    libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc \
+    zip zlib1g-dev openjdk-11-jdk
 
-      - name: Terminalga ulanish (SSH tmate)
-        uses: mxschmitt/action-tmate@v3
-        if: always() # Sync xato bersa ham terminal o'chmasligi uchun
-        timeout-minutes: 360
+- name: Initialize repo
+  run: |
+    mkdir pixelos
+    cd pixelos
+    repo init -u https://github.com/PixelOS-AOSP/manifest.git -b twelve
+    repo sync -j2
+
+- name: Clone device tree
+  run: |
+    cd pixelos
+    git clone https://github.com/PixelOS-Devices/device_xiaomi_fleur device/xiaomi/fleur
+
+- name: Build
+  run: |
+    cd pixelos
+    source build/envsetup.sh
+    lunch aosp_fleur-userdebug
+    make -j2
+```
